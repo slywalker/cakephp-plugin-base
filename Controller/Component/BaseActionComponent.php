@@ -307,7 +307,9 @@ class BaseActionComponent extends Component {
 
 	protected function _generateNames($modelName) {
 		return array(
-			'singular' => Inflector::variable($modelName),
+			'singular' => Inflector::variable(
+				Inflector::singularize($modelName)
+			),
 			'plural' => Inflector::variable(
 				Inflector::pluralize($modelName)
 			),
@@ -317,7 +319,9 @@ class BaseActionComponent extends Component {
 				)
 			),
 			'pluralHuman' => Inflector::humanize(
-				Inflector::underscore($modelName)
+				Inflector::underscore(
+					Inflector::pluralize($modelName)
+				)
 			)
 		);
 	}
