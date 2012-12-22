@@ -42,10 +42,12 @@ class BaseActionComponent extends Component {
 		switch ($action) {
 			case 'index':
 				$controller->set($names['plural'], $this->index());
+				$controller->set('_serialize', array($names['plural']));
 				break;
 
 			case 'view':
 				$controller->set($names['singular'], $this->view($id));
+				$controller->set('_serialize', array($names['singular']));
 				break;
 
 			case 'add':
