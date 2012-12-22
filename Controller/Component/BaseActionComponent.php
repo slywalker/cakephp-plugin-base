@@ -6,7 +6,7 @@ class BaseActionComponent extends Component {
 
 	public $components = array('Session');
 
-	public $autoLoad = false;
+	public $autoLoad = array();
 
 	public $flash = array(
 		'element' => 'default',
@@ -23,28 +23,42 @@ class BaseActionComponent extends Component {
 	}
 
 	public function beforeRender(Controller $controller) {
-		if (!$this->autoLoad) {
+		if (!$autoLoad = $this->autoLoad) {
 			return;
 		}
 
-		if ($controller->request->action === 'index') {
-			$names = $this->_generateNames($controller->modelClass);
-			$controller->set($names['plural'], $this->index());
+		if (in_array('*', $autoLoad)) {
+			$autoLoad = array('index', 'view', 'add', 'edit', 'delete');
 		}
-		elseif ($controller->request->action === 'view') {
-			$names = $this->_generateNames($controller->modelClass);
-			$id = current(($controller->request->pass) ?: array(null));
-			$controller->set($names['singular'], $this->view($id));
+
+		$action = $controller->request->action;
+		if (!in_array($action, $autoLoad)) {
+			return;
 		}
-		elseif ($controller->request->action === 'add') {
-			$this->add();
-		}
-		elseif (in_array(
-			$controller->request->action,
-			array('edit', 'delete')
-		)) {
-			$id = current(($controller->request->pass) ?: array(null));
-			$this->{$controller->request->action}($id);
+
+		$id = current(($controller->request->pass) ?: array(null));
+		$names = $this->_generateNames($controller->modelClass);
+
+		switch ($action) {
+			case 'index':
+				$controller->set($names['plural'], $this->index());
+				break;
+
+			case 'view':
+				$controller->set($names['singular'], $this->view($id));
+				break;
+
+			case 'add':
+				$this->add();
+				break;
+
+			case 'edit':
+				$this->edit($id);
+				break;
+
+			case 'delete':
+				$this->delete($id);
+				break;
 		}
 	}
 
