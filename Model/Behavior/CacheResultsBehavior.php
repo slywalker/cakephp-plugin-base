@@ -22,17 +22,16 @@ class CacheResultsBehavior extends ModelBehavior {
 	public function cache($model, $type = 'first', $query = array()) {
 		$config = $this->settings[$model->alias]['config'];
 
-		$duration = $this->settings[$model->alias]['duration'];
-		if (isset($query['duration'])) {
-			$duration = $query['duration'];
-			unset($query['duration']);
-		}
+		$query += array(
+			'duration' => $this->settings[$model->alias]['duration'],
+			'method' => 'find'
+		);
 
-		$method = 'find';
-		if (isset($query['method'])) {
-			$method = $query['method'];
-			unset($query['method']);
-		}
+		$duration = $query['duration'];
+		unset($query['duration']);
+
+		$method = $query['method'];
+		unset($query['method']);
 
 		$key = implode('_', array(
 			Inflector::underscore($model->alias),
@@ -44,10 +43,8 @@ class CacheResultsBehavior extends ModelBehavior {
 			return $results;
 		}
 
-		$results = $model->{$method}($type, $query);
-
-		if ($results) {
-			if (!is_null($duration)) {
+		if ($results = $model->{$method}($type, $query)) {
+			if ($duration) {
 				Cache::set(compact('duration'), $config);
 			}
 			Cache::write($key, $results, $config);
