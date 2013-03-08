@@ -1,0 +1,24 @@
+{
+    "name": "slywalker/base",
+    "type": "cakephp-plugin",
+    "description": "CakePHP Base Plugin",
+    "keywords": [
+        "cakephp"
+    ],
+    "homepage": "https://github.com/slywalker/cakephp-plugin-base",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Yasuo Harada",
+            "email": "slywalker.net@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/slywalker/cakephp-plugin-base/issues",
+        "source": "https://github.com/slywalker/cakephp-plugin-base"
+    },
+    "require": {
+        "php": ">=5.3.0",
+        "composer/installers": "*"
+    }
+}
