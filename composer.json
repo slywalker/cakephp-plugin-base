@@ -3,7 +3,8 @@
     "type": "cakephp-plugin",
     "description": "CakePHP Base Plugin",
     "keywords": [
-        "cakephp"
+        "cakephp",
+        "plugin"
     ],
     "homepage": "https://github.com/slywalker/cakephp-plugin-base",
     "license": "MIT",
