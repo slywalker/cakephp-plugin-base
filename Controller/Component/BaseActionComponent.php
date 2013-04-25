@@ -1,10 +1,9 @@
 <?php
 App::uses('Component', 'Controller');
+App::uses('CakeSession', 'Model/Datasource');
 App::uses('Inflector', 'Utility');
 
 class BaseActionComponent extends Component {
-
-	public $components = array('Session');
 
 	public $autoLoad = array();
 
@@ -25,7 +24,7 @@ class BaseActionComponent extends Component {
 	public function initialize(Controller $controller) {
 		$this->Controller = $controller;
 
-		$this->names = $names = $this->_generateNames($options['modelClass']);
+		$this->names = $names = $this->_generateNames($controller->modelClass);
 
 		$this->options = array(
 			'modelClass' => $controller->modelClass,
@@ -97,14 +96,6 @@ class BaseActionComponent extends Component {
 	public function view($id, $options = array()) {
 		$default = array();
 		$options = Hash::merge($this->options, $default, $options);
-
-		$names = $this->_generateNames($options['modelClass']);
-		if (!$options['exceptionMessage']) {
-			$options['exceptionMessage'] = __(
-				'Invalid %s',
-				__($names['singularHuman'])
-			);
-		}
 
 		$Model = $this->Controller->{$options['modelClass']};
 
@@ -208,14 +199,19 @@ class BaseActionComponent extends Component {
 
 	public function setFlash($type, $options = array()) {
 		if (in_array($type, array('success', 'error'))) {
-			$params = array_merge($this->flash, $this->flash[$type], $options[$type]);
-			extract($params);
+			$options = Hash::merge($this->flash, $this->flash[$type], $options[$type]);
 		} else {
-			$message = $type;
-			$params = array_merge($this->flash, $options);
-			extract($params);
+			if (!is_array($options['params']) && isset($this->flash[$options['params']])) {
+				$options = Hash::merge($options, $this->flash[$options['params']]);
+			}
+			$options = Hash::merge($this->flash, $options);
+			$options['message'] = $type;
 		}
-		CakeSession::write('Message.' . $key, compact('message', 'element', 'params'));
+		CakeSession::write('Message.' . $options['key'], array(
+			'message' => $options['message'],
+			'element' => $options['element'],
+			'params' => $options['params']
+		));
 	}
 
 	protected function _generateNames($modelName) {
