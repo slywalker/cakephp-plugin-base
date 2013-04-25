@@ -12,14 +12,37 @@ class BaseActionComponent extends Component {
 		'element' => 'default',
 		'key' => 'flash',
 		'params' => array('class' => 'message'),
-		'successParams' => array(),
-		'errorParams' => array()
+		'success' => array(
+			'params' => array('class' => 'message success')
+		),
+		'error' => array(
+			'params' => array('class' => 'message error')
+		)
 	);
 
 	public $Controller;
 
 	public function initialize(Controller $controller) {
 		$this->Controller = $controller;
+
+		$this->names = $names = $this->_generateNames($options['modelClass']);
+
+		$this->options = array(
+			'modelClass' => $controller->modelClass,
+			'fields' => null,
+			'saveMethod' => 'save',
+			'exception' => array(
+				'notFound' => __('Invalid %s', __($names['singularHuman']))
+			),
+			'success' => array(
+				'redirect' => array('action' => 'index')
+			),
+			'error' => array(
+				'redirect' => $controller->referer(array(
+					'action' => 'index'
+				))
+			)
+		);
 	}
 
 	public function beforeRender(Controller $controller) {
@@ -65,21 +88,15 @@ class BaseActionComponent extends Component {
 	}
 
 	public function index($options = array()) {
-		$default = array(
-			'modelClass' => $this->Controller->modelClass
-		);
-		$options += $default;
+		$default = array();
+		$options = Hash::merge($this->options, $default, $options);
 
 		return $this->Controller->paginate($options['modelClass']);
 	}
 
 	public function view($id, $options = array()) {
-		$default = array(
-			'modelClass' => $this->Controller->modelClass,
-			'fields' => null,
-			'exceptionMessage' => null
-		);
-		$options += $default;
+		$default = array();
+		$options = Hash::merge($this->options, $default, $options);
 
 		$names = $this->_generateNames($options['modelClass']);
 		if (!$options['exceptionMessage']) {
@@ -93,38 +110,23 @@ class BaseActionComponent extends Component {
 
 		$Model->id = $id;
 		if (!$Model->exists()) {
-			throw new NotFoundException($options['exceptionMessage']);
+			throw new NotFoundException($options['exception']['notFound']);
 		}
 		return $Model->read($options['fields'], $id);
 	}
 
 	public function add($options = array()) {
+		$names = $this->names;
 		$default = array(
-			'modelClass' => $this->Controller->modelClass,
-			'saveMethod' => 'save',
-			'successRedirect' => array(
-				'action' => 'index'
+			'success' => array(
+				'message' => __('The %s has been saved.', __($names['singularHuman'])),
 			),
-			'successMessage' => null,
-			'successParams' => array(),
-			'errorMessage' => null,
-			'errorParams' => array()
+			'error' => array(
+				'message' => __('The %s could not be saved. Please, try again.', __($names['singularHuman'])),
+			)
 		);
-		$options += $default;
 
-		$names = $this->_generateNames($options['modelClass']);
-		if (!$options['successMessage']) {
-			$options['successMessage'] = __(
-				'The %s has been saved.',
-				__($names['singularHuman'])
-			);
-		}
-		if (!$options['errorMessage']) {
-			$options['errorMessage'] = __(
-				'The %s could not be saved. Please, try again.',
-				__($names['singularHuman'])
-			);
-		}
+		$options = Hash::merge($this->options, $default, $options);
 
 		$Model = $this->Controller->{$options['modelClass']};
 
@@ -135,98 +137,39 @@ class BaseActionComponent extends Component {
 			);
 			$Model->create();
 			if ($Model->{$options['saveMethod']}($this->Controller->request->data)) {
-				$this->Session->setFlash(
-					$options['successMessage'],
-					$this->flash['element'],
-					array_merge(
-						$this->flash['params'],
-						$this->flash['successParams'],
-						$options['successParams']
-					),
-					$this->flash['key']
-				);
-				return $this->Controller->redirect($options['successRedirect']);
+				$this->setFlash('success', $options);
+				return $this->Controller->redirect($options['success']['redirect']);
 			} else {
-				$this->Session->setFlash(
-					$options['errorMessage'],
-					$this->flash['element'],
-					array_merge(
-						$this->flash['params'],
-						$this->flash['errorParams'],
-						$options['errorParams']
-					),
-					$this->flash['key']
-				);
+				$this->setFlash('error', $options);
 			}
 		}
 	}
 
 	public function edit($id, $options = array()) {
+		$names = $this->names;
 		$default = array(
-			'modelClass' => $this->Controller->modelClass,
-			'fields' => null,
-			'saveMethod' => 'save',
-			'successRedirect' => array(
-				'action' => 'index'
+			'success' => array(
+				'message' => __('The %s has been saved.', __($names['singularHuman'])),
 			),
-			'successMessage' => null,
-			'successParams' => array(),
-			'errorMessage' => null,
-			'errorParams' => array(),
-			'exceptionMessage' => null
+			'error' => array(
+				'message' => __('The %s could not be saved. Please, try again.', __($names['singularHuman'])),
+			)
 		);
-		$options += $default;
 
-		$names = $this->_generateNames($options['modelClass']);
-		if (!$options['exceptionMessage']) {
-			$options['exceptionMessage'] = __(
-				'Invalid %s',
-				__($names['singularHuman'])
-			);
-		}
-		if (!$options['successMessage']) {
-			$options['successMessage'] = __(
-				'The %s has been saved.',
-				__($names['singularHuman'])
-			);
-		}
-		if (!$options['errorMessage']) {
-			$options['errorMessage'] = __(
-				'The %s could not be saved. Please, try again.',
-				__($names['singularHuman'])
-			);
-		}
+		$options = Hash::merge($this->options, $default, $options);
 
 		$Model = $this->Controller->{$options['modelClass']};
 
 		$Model->id = $id;
 		if (!$Model->exists()) {
-			throw new NotFoundException($options['exceptionMessage']);
+			throw new NotFoundException($options['exception']['notFound']);
 		}
 		if ($this->Controller->request->is('post') || $this->Controller->request->is('put')) {
 			if ($Model->{$options['saveMethod']}($this->Controller->request->data)) {
-				$this->Session->setFlash(
-					$options['successMessage'],
-					$this->flash['element'],
-					array_merge(
-						$this->flash['params'],
-						$this->flash['successParams'],
-						$options['successParams']
-					),
-					$this->flash['key']
-				);
-				return $this->Controller->redirect($options['successRedirect']);
+				$this->setFlash('success', $options);
+				return $this->Controller->redirect($options['success']['redirect']);
 			} else {
-				$this->Session->setFlash(
-					$options['errorMessage'],
-					$this->flash['element'],
-					array_merge(
-						$this->flash['params'],
-						$this->flash['errorParams'],
-						$options['errorParams']
-					),
-					$this->flash['key']
-				);
+				$this->setFlash('error', $options);
 			}
 		} else {
 			$this->Controller->request->data = $Model->read($options['fields'], $id);
@@ -234,43 +177,17 @@ class BaseActionComponent extends Component {
 	}
 
 	public function delete($id, $options = array()) {
+		$names = $this->names;
 		$default = array(
-			'modelClass' => $this->Controller->modelClass,
-			'fields' => null,
-			'saveMethod' => 'save',
-			'successRedirect' => array(
-				'action' => 'index'
+			'success' => array(
+				'message' => __('The %s has been deleted.', __($names['singularHuman'])),
 			),
-			'errorRedirect' => $this->Controller->referer(array(
-				'action' => 'index'
-			)),
-			'successMessage' => null,
-			'successParams' => array(),
-			'errorMessage' => null,
-			'errorParams' => array(),
-			'exceptionMessage' => null
+			'error' => array(
+				'message' => __('The %s could not be deleted. Please, try again.', __($names['singularHuman'])),
+			)
 		);
-		$options += $default;
 
-		$names = $this->_generateNames($options['modelClass']);
-		if (!$options['exceptionMessage']) {
-			$options['exceptionMessage'] = __(
-				'Invalid %s',
-				__($names['singularHuman'])
-			);
-		}
-		if (!$options['successMessage']) {
-			$options['successMessage'] = __(
-				'The %s has been deleted.',
-				__($names['singularHuman'])
-			);
-		}
-		if (!$options['errorMessage']) {
-			$options['errorMessage'] = __(
-				'The %s could not be deleted. Please, try again.',
-				__($names['singularHuman'])
-			);
-		}
+		$options = Hash::merge($this->options, $default, $options);
 
 		$Model = $this->Controller->{$options['modelClass']};
 
@@ -279,32 +196,26 @@ class BaseActionComponent extends Component {
 		}
 		$Model->id = $id;
 		if (!$Model->exists()) {
-			throw new NotFoundException($options['exceptionMessage']);
+			throw new NotFoundException($options['exception']['notFound']);
 		}
 		if ($Model->delete($id)) {
-			$this->Session->setFlash(
-				$options['successMessage'],
-				$this->flash['element'],
-				array_merge(
-					$this->flash['params'],
-					$this->flash['successParams'],
-					$options['successParams']
-				),
-				$this->flash['key']
-			);
-			return $this->Controller->redirect($options['successRedirect']);
+			$this->setFlash('success', $options);
+			return $this->Controller->redirect($options['success']['redirect']);
 		}
-		$this->Session->setFlash(
-			$options['errorMessage'],
-			$this->flash['element'],
-			array_merge(
-				$this->flash['params'],
-				$this->flash['errorParams'],
-				$options['errorParams']
-			),
-			$this->flash['key']
-		);
-		return $this->Controller->redirect($options['errorRedirect']);
+		$this->setFlash('error', $options);
+		return $this->Controller->redirect($options['error']['redirect']);
+	}
+
+	public function setFlash($type, $options = array()) {
+		if (in_array($type, array('success', 'error'))) {
+			$params = array_merge($this->flash, $this->flash[$type], $options[$type]);
+			extract($params);
+		} else {
+			$message = $type;
+			$params = array_merge($this->flash, $options);
+			extract($params);
+		}
+		CakeSession::write('Message.' . $key, compact('message', 'element', 'params'));
 	}
 
 	protected function _generateNames($modelName) {
