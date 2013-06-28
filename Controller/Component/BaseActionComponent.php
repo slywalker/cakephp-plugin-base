@@ -5,6 +5,8 @@ App::uses('Inflector', 'Utility');
 
 class BaseActionComponent extends Component {
 
+	public $components = array('Paginator');
+
 	public $autoLoad = array();
 
 	public $flash = array(
@@ -86,13 +88,31 @@ class BaseActionComponent extends Component {
 		}
 	}
 
+/**
+ * index
+ * - `modelClass` useing model class
+ *
+ * @param  array $options options
+ * @return array paginate result
+ */
 	public function index($options = array()) {
 		$default = array();
 		$options = Hash::merge($this->options, $default, $options);
 
-		return $this->Controller->paginate($options['modelClass']);
+		return $this->Paginator->paginate($options['modelClass']);
 	}
 
+/**
+ * view
+ * - `modelClass` useing model class
+ * - `exception`
+ *     - `notFound` NotFoundException message
+ * - `fields` fields param Model::read()
+ * @param  $id ID
+ * @param  array $options options
+ * @return array Model::read result
+ * @throws NotFoundException
+ */
 	public function view($id, $options = array()) {
 		$default = array();
 		$options = Hash::merge($this->options, $default, $options);
@@ -106,6 +126,15 @@ class BaseActionComponent extends Component {
 		return $Model->read($options['fields'], $id);
 	}
 
+/**
+ * add
+ * - `modelClass` useing model class
+ * - `saveMethod` save method
+ * - `success`
+ *     - `redirect` array or string redirect url
+ * @param  array $options options
+ * @return void
+ */
 	public function add($options = array()) {
 		$names = $this->names;
 		$default = array(
@@ -136,6 +165,20 @@ class BaseActionComponent extends Component {
 		}
 	}
 
+/**
+ * edit
+ * - `modelClass` useing model class
+ * - `exception`
+ *     - `notFound` NotFoundException message
+ * - `saveMethod` save method
+ * - `success`
+ *     - `redirect` array or string redirect url
+ * - `fields` fields param Model::read()
+ * @param  $id ID
+ * @param  array $options options
+ * @return void
+ * @throws NotFoundException
+ */
 	public function edit($id, $options = array()) {
 		$names = $this->names;
 		$default = array(
@@ -167,6 +210,21 @@ class BaseActionComponent extends Component {
 		}
 	}
 
+/**
+ * delete
+ * - `modelClass` useing model class
+ * - `exception`
+ *     - `notFound` NotFoundException message
+ * - `success`
+ *     - `redirect` array or string redirect url
+ * - `error`
+ *     - `redirect` array or string redirect url
+ * @param  $id ID
+ * @param  array $options options
+ * @return void
+ * @throws MethodNotAllowedException
+ * @throws NotFoundException
+ */
 	public function delete($id, $options = array()) {
 		$names = $this->names;
 		$default = array(
