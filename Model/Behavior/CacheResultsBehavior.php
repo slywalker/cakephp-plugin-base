@@ -8,7 +8,7 @@ App::uses('Inflector', 'Utility');
  */
 class CacheResultsBehavior extends ModelBehavior {
 
-	public function setup($model, $config = array()) {
+	public function setup(Model $model, $config = array()) {
 		$default = array(
 			'config' => 'default',
 			'duration' => null,
@@ -19,7 +19,7 @@ class CacheResultsBehavior extends ModelBehavior {
 		$this->_clear[$model->alias] = false;
 	}
 
-	public function cache($model, $type = 'first', $query = array()) {
+	public function cache(Model $model, $type = 'first', $query = array()) {
 		$config = $this->settings[$model->alias]['config'];
 
 		$query += array(
@@ -53,7 +53,7 @@ class CacheResultsBehavior extends ModelBehavior {
 		return $results;
 	}
 
-	public function afterSave($model, $created) {
+	public function afterSave(Model $model, $created) {
 		$config = $this->settings[$model->alias]['config'];
 		$namespace = $this->settings[$model->alias]['namespace'];
 
@@ -63,7 +63,7 @@ class CacheResultsBehavior extends ModelBehavior {
 		return true;
 	}
 
-	protected function _getNamespaceKey($model) {
+	protected function _getNamespaceKey(Model $model) {
 		$config = $this->settings[$model->alias]['config'];
 		$namespace = $this->settings[$model->alias]['namespace'];
 
@@ -77,7 +77,7 @@ class CacheResultsBehavior extends ModelBehavior {
 		return $namespaceKey;
 	}
 
-	public function clearCacheResults($model) {
+	public function clearCacheResults(Model $model) {
 		$config = $this->settings[$model->alias]['config'];
 		$namespace = $this->_getNamespaceKey($model);
 
