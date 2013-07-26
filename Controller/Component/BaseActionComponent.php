@@ -259,6 +259,9 @@ class BaseActionComponent extends Component {
 		if (in_array($type, array('success', 'error'))) {
 			$options = Hash::merge($this->flash, $this->flash[$type], $options[$type]);
 		} else {
+			if (is_string($options)) {
+				$options = array('params' => $options);
+			}
 			if (!is_array($options['params']) && isset($this->flash[$options['params']])) {
 				$options = Hash::merge($options, $this->flash[$options['params']]);
 			}
