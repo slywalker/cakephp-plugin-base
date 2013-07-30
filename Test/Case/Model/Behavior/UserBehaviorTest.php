@@ -74,4 +74,15 @@ class UserBehaviorTestCase extends CakeTestCase {
 		$this->assertFalse($result);
 	}
 
+	public function testCheckPasswordToken() {
+		$result = $this->User->checkPasswordToken('testtoken');
+		$this->assertFalse($result);
+
+		$result = $this->User->checkPasswordToken('testtoken2');
+		$this->assertFalse($result);
+
+		$result = $this->User->checkPasswordToken('testtoken5');
+		$this->assertEquals($result['User']['id'], '515e36a2-5fjj-46b9-8247-584367265f11');
+	}
+
 }

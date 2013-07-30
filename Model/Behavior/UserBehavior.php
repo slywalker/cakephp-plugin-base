@@ -111,7 +111,7 @@ class UserBehavior extends ModelBehavior {
 			'confirm_password' => array(
 				'required' => array(
 					'rule' => array('compareFields', 'new_password', 'confirm_password'),
-					'message' => __d('users', 'The passwords are not equal.')
+					'message' => __d('base', 'The passwords are not equal.')
 				)
 			)
 		);
@@ -142,8 +142,8 @@ class UserBehavior extends ModelBehavior {
  * @param int $length Token Length
  * @return string
  */
-	public function generateToken() {
-		return uniqid(md5(rand()));
+	public function generateToken($length = 45) {
+		return substr(uniqid(md5(rand())), 0, $length);
 	}
 
 /**
