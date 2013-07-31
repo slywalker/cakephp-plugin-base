@@ -182,6 +182,7 @@ class BaseActionComponent extends Component {
 	public function edit($id, $options = array()) {
 		$names = $this->names;
 		$default = array(
+			'contain' => array(),
 			'success' => array(
 				'message' => __('The %s has been saved.', __($names['singularHuman'])),
 			),
@@ -206,6 +207,7 @@ class BaseActionComponent extends Component {
 				$this->setFlash('error', $options);
 			}
 		} else {
+			$Model->contain($options['contain']);
 			$this->Controller->request->data = $Model->read($options['fields'], $id);
 		}
 	}
