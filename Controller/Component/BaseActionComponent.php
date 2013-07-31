@@ -139,11 +139,10 @@ class BaseActionComponent extends Component {
 		$names = $this->names;
 		$default = array(
 			'success' => array(
-				'message' => __('The %s has been saved.', __($names['singularHuman'])),
+				'message' => __('The %s has been saved.', __($names['singularHuman']))
 			),
 			'error' => array(
-				'message' => __('The %s could not be saved. Please, try again.', __($names['singularHuman'])),
-			)
+				'message' => __('The %s could not be saved. Please, try again.', __($names['singularHuman']))			)
 		);
 
 		$options = Hash::merge($this->options, $default, $options);
@@ -232,6 +231,9 @@ class BaseActionComponent extends Component {
 		$default = array(
 			'success' => array(
 				'message' => __('The %s has been deleted.', __($names['singularHuman'])),
+				'redirect' => $this->Controller->referer(array(
+					'action' => 'index'
+				))
 			),
 			'error' => array(
 				'message' => __('The %s could not be deleted. Please, try again.', __($names['singularHuman'])),
