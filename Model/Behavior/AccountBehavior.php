@@ -22,12 +22,34 @@ class AccountBehavior extends ModelBehavior {
 				'active' => 'active',
 				'lastLogin' => 'last_login',
 				'newPassword' => 'new_password',
-				'confirmPassword' => 'confirm_password'
+				'confirmPassword' => 'confirm_password',
+				'oldEmail' => 'old_email'
 			),
+			'emailVerification' => true,
 			'emailTokenExpirationTime' => '+1 day',
 			'hashMethod' => 'hash'
 		);
 		$this->settings[$model->alias] = Hash::merge($default, $config);
+	}
+
+	public function afterSave(Model $model, $created) {
+		$fields = $this->settings[$model->alias]['fields'];
+		$emailVerification = $this->settings[$model->alias]['emailVerification'];
+		$data = $model->data[$model->alias];
+
+		$oldEmail = '';
+		if (!$created && isset($data[$fields['oldEmail']])) {
+			$oldEmail = $data[$fields['oldEmail']];
+		}
+
+		if (
+			$emailVerification &&
+			isset($data[$fields['email']]) &&
+			$data[$fields['email']] !== $oldEmail
+		) {
+			$id = $model->data[$model->alias][$model->primaryKey];
+			$model->data = $this->setEmailToken($model, $id);
+		}
 	}
 
 /**

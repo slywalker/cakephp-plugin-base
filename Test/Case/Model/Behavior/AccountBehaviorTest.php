@@ -124,4 +124,29 @@ class AccountBehaviorTestCase extends CakeTestCase {
 		$this->assertEquals($result['User']['email_token_expires'], '2008-03-29 02:45:46');
 	}
 
+	public function testAfterSave() {
+		$data = array(
+			'User' => array(
+				'username' => 'foo',
+				'email' => 'foo@example.com'
+			)
+		);
+		$result = $this->User->save($data);
+		$this->assertEquals($result['User']['username'], 'foo');
+		$this->assertEquals($result['User']['email'], 'foo@example.com');
+		$this->assertEquals($result['User']['email_token_expires'], '2008-03-29 02:45:46');
+		$this->assertEquals($result['User']['email_verified'], 0);
+
+		$data = array(
+			'User' => array(
+				'username' => 'foo',
+				'email' => 'foo@example.com',
+				'old_email' => 'foo@example.com'
+			)
+		);
+		$result = $this->User->save($data);
+		$this->assertEquals($result['User']['username'], 'foo');
+		$this->assertFalse(isset($result['User']['email_token']));
+	}
+
 }
