@@ -162,16 +162,20 @@ class AccountBehavior extends ModelBehavior {
 
 		$result = false;
 
-		$tmp = $model->validate;
-		$model->validate = array(
-			$fields['newPassword'] => $tmp[$fields['password']],
-			$fields['confirmPassword'] => array(
-				'required' => array(
-					'rule' => array('compareFields', $fields['newPassword'], $fields['confirmPassword']),
-					'message' => __d('base', 'The passwords are not equal.')
-				)
-			)
+		$model->validator()->add(
+			$fields['newPassword'],
+			$model->validator()->getField($fields['password'])
 		);
+		$model->validator()->add($fields['confirmPassword'], array(
+			'required' => array(
+				'rule' => array(
+					'compareFields',
+					$fields['newPassword'],
+					$fields['confirmPassword']
+				),
+				'message' => __d('base', 'The passwords are not equal.')
+			)
+		));
 
 		$model->set($postData);
 		if ($model->validates()) {
@@ -186,7 +190,6 @@ class AccountBehavior extends ModelBehavior {
 			));
 		}
 
-		$model->validate = $tmp;
 		return $result;
 	}
 
