@@ -32,6 +32,16 @@ class AccountBehavior extends ModelBehavior {
 		$this->settings[$model->alias] = Hash::merge($default, $config);
 	}
 
+	public function beforeSave(Model $model) {
+		$fields = $this->settings[$model->alias]['fields'];
+		$hashMethod = $this->settings[$model->alias]['hashMethod'];
+
+		if (isset($model->data[$model->alias][$fields['password']])) {
+			$hash = $model->{$hashMethod}($model->data[$model->alias][$fields['password']]);
+			$model->data[$model->alias][$fields['password']] = $hash;
+		}
+	}
+
 	public function afterSave(Model $model, $created) {
 		$fields = $this->settings[$model->alias]['fields'];
 		$emailVerification = $this->settings[$model->alias]['emailVerification'];
@@ -137,7 +147,7 @@ class AccountBehavior extends ModelBehavior {
 		));
 
 		if (empty($id)) {
-			$model->invalidate('email', 'notExists');
+			$model->invalidate($fields['email'], 'notExists');
 			return false;
 		}
 
@@ -189,16 +199,12 @@ class AccountBehavior extends ModelBehavior {
  */
 	public function resetPassword(Model $model, $postData = array()) {
 		$fields = $this->settings[$model->alias]['fields'];
-		$hashMethod = $this->settings[$model->alias]['hashMethod'];
 
 		$result = false;
 
-		$model->validator()->add(
-			$fields['newPassword'],
-			$model->validator()->getField($fields['password'])
-		);
-		$model->validator()->add($fields['confirmPassword'], array(
-			'required' => array(
+		$model->validate[$fields['newPassword']] = $model->validator()->getField($fields['password'])->ruleSet;
+		$model->validate[$fields['confirmPassword']] = array(
+			'compare' => array(
 				'rule' => array(
 					'compareFields',
 					$fields['newPassword'],
@@ -206,18 +212,15 @@ class AccountBehavior extends ModelBehavior {
 				),
 				'message' => __d('base', 'The passwords are not equal.')
 			)
-		));
+		);
 
 		$model->set($postData);
 		if ($model->validates()) {
-			$model->data[$model->alias][$fields['password']] = $model->{$hashMethod}(
-				$model->data[$model->alias][$fields['newPassword']]
-			);
-			$model->data[$model->alias][$fields['passwordToken']] = null;
+			$model->data[$model->alias][$fields['password']] = $model->data[$model->alias][$fields['newPassword']];
+			$model->data[$model->alias][$fields['passwordToken']] = '';
 			$model->data[$model->alias][$fields['emailTokenExpires']] = null;
 			$result = $model->save($model->data, array(
-				'validate' => false,
-				'callbacks' => false
+				'validate' => false
 			));
 		}
 
@@ -255,7 +258,7 @@ class AccountBehavior extends ModelBehavior {
 		if (
 			isset($model->data[$model->alias][$field1]) &&
 			isset($model->data[$model->alias][$field2]) &&
-			$model->data[$model->alias][$field1] == $model->data[$model->alias][$field2]
+			$model->data[$model->alias][$field1] === $model->data[$model->alias][$field2]
 		) {
 			return true;
 		}
