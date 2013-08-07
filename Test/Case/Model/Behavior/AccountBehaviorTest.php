@@ -120,7 +120,7 @@ class AccountBehaviorTestCase extends CakeTestCase {
 	}
 
 	public function testSetPasswordToken() {
-		$result = $this->User->setPasswordToken('1');
+		$result = $this->User->setPasswordToken('adminuser@cakedc.com');
 		$this->assertEquals($result['User']['email_token_expires'], '2008-03-29 02:45:46');
 	}
 

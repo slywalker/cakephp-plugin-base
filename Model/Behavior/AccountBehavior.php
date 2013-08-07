@@ -128,9 +128,18 @@ class AccountBehavior extends ModelBehavior {
  * @param string $id
  * @return array On success it returns the user data record
  */
-	public function setPasswordToken(Model $model, $id) {
+	public function setPasswordToken(Model $model, $email) {
 		$fields = $this->settings[$model->alias]['fields'];
 		$expirationTime = $this->settings[$model->alias]['emailTokenExpirationTime'];
+
+		$id = $model->field('id', array(
+			$model->alias . '.' . $fields['email'] => $email
+		));
+
+		if (empty($id)) {
+			$model->invalidate('email', 'notExists');
+			return false;
+		}
 
 		$data = array(
 			$model->alias => array(
