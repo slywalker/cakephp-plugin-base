@@ -2,6 +2,8 @@
 App::uses('Component', 'Controller');
 App::uses('CakeSession', 'Model/Datasource');
 
+use \Opauth;
+
 class OpauthComponent extends Component {
 
 	public function run() {
