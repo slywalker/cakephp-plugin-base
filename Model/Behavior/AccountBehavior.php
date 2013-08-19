@@ -40,6 +40,8 @@ class AccountBehavior extends ModelBehavior {
 			$hash = $model->{$hashMethod}($model->data[$model->alias][$fields['password']]);
 			$model->data[$model->alias][$fields['password']] = $hash;
 		}
+
+		return true;
 	}
 
 	public function afterSave(Model $model, $created) {
@@ -60,6 +62,8 @@ class AccountBehavior extends ModelBehavior {
 			$id = $model->data[$model->alias][$model->primaryKey];
 			$model->data = $this->setEmailToken($model, $id);
 		}
+
+		return true;
 	}
 
 /**
