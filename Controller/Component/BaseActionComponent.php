@@ -31,7 +31,9 @@ class BaseActionComponent extends Component {
 		$this->options = array(
 			'modelClass' => $controller->modelClass,
 			'fields' => null,
+			'readMethod' => 'read',
 			'saveMethod' => 'save',
+			'deleteMethod' => 'delete',
 			'exception' => array(
 				'notFound' => __('Invalid %s', __($names['singularHuman']))
 			),
@@ -123,7 +125,7 @@ class BaseActionComponent extends Component {
 		if (!$Model->exists()) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
-		return $Model->read($options['fields'], $id);
+		return $Model->{$options['readMethod']}($options['fields'], $id);
 	}
 
 /**
@@ -251,7 +253,7 @@ class BaseActionComponent extends Component {
 		if (!$Model->exists()) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
-		if ($Model->delete($id)) {
+		if ($Model->{$options['deleteMethod']}($id)) {
 			$this->setFlash('success', $options);
 			return $this->Controller->redirect($options['success']['redirect']);
 		}
