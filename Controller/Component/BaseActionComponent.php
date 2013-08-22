@@ -120,11 +120,10 @@ class BaseActionComponent extends Component {
 		$options = Hash::merge($this->options, $default, $options);
 
 		$Model = $this->Controller->{$options['modelClass']};
-
-		$Model->id = $id;
-		if (!$Model->exists()) {
+		if (!$Model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
+
 		return $Model->{$options['readMethod']}($options['fields'], $id);
 	}
 
@@ -149,17 +148,17 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Model = $this->Controller->{$options['modelClass']};
+		$Controller = $this->Controller;
+		$Model = $Controller->{$options['modelClass']};
 
-		if ($this->Controller->request->is('post')) {
-			$this->Controller->request->data(
-				$options['modelClass'] . '.' . $Model->primaryKey,
-				null
-			);
+		if ($Controller->request->is('post')) {
+			$primaryKey = $options['modelClass'] . '.' . $Model->primaryKey;
+			$Controller->request->data($primaryKey, null);
+
 			$Model->create();
-			if ($Model->{$options['saveMethod']}($this->Controller->request->data)) {
+			if ($Model->{$options['saveMethod']}($Controller->request->data)) {
 				$this->setFlash('success', $options);
-				return $this->Controller->redirect($options['success']['redirect']);
+				return $Controller->redirect($options['success']['redirect']);
 			} else {
 				$this->setFlash('error', $options);
 			}
@@ -194,22 +193,22 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Model = $this->Controller->{$options['modelClass']};
-
-		$Model->id = $id;
-		if (!$Model->exists()) {
+		$Controller = $this->Controller;
+		$Model = $Controller->{$options['modelClass']};
+		if (!$Model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
-		if ($this->Controller->request->is('post') || $this->Controller->request->is('put')) {
-			if ($Model->{$options['saveMethod']}($this->Controller->request->data)) {
+
+		if (!$Controller->request->is('post') && !$Controller->request->is('put')) {
+			$Model->contain($options['contain']);
+			$Controller->request->data = $Model->read($options['fields'], $id);
+		} else {
+			if ($Model->{$options['saveMethod']}($Controller->request->data)) {
 				$this->setFlash('success', $options);
-				return $this->Controller->redirect($options['success']['redirect']);
+				return $Controller->redirect($options['success']['redirect']);
 			} else {
 				$this->setFlash('error', $options);
 			}
-		} else {
-			$Model->contain($options['contain']);
-			$this->Controller->request->data = $Model->read($options['fields'], $id);
 		}
 	}
 
@@ -244,21 +243,24 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Model = $this->Controller->{$options['modelClass']};
+		$Controller = $this->Controller;
+		$Model = $Controller->{$options['modelClass']};
 
-		if (!$this->Controller->request->is('post')) {
+		if (!$Controller->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$Model->id = $id;
-		if (!$Model->exists()) {
+
+		if (!$Model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
+
 		if ($Model->{$options['deleteMethod']}($id)) {
 			$this->setFlash('success', $options);
-			return $this->Controller->redirect($options['success']['redirect']);
+			return $Controller->redirect($options['success']['redirect']);
+		} else {
+			$this->setFlash('error', $options);
+			return $Controller->redirect($options['error']['redirect']);
 		}
-		$this->setFlash('error', $options);
-		return $this->Controller->redirect($options['error']['redirect']);
 	}
 
 	public function setFlash($type, $options = array()) {
@@ -268,12 +270,15 @@ class BaseActionComponent extends Component {
 			if (is_string($options)) {
 				$options = array('params' => $options);
 			}
+
 			if (!is_array($options['params']) && isset($this->flash[$options['params']])) {
 				$options = Hash::merge($options, $this->flash[$options['params']]);
 			}
+
 			$options = Hash::merge($this->flash, $options);
 			$options['message'] = $type;
 		}
+
 		CakeSession::write('Message.' . $options['key'], array(
 			'message' => $options['message'],
 			'element' => $options['element'],
