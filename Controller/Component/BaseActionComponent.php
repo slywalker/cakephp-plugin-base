@@ -119,12 +119,12 @@ class BaseActionComponent extends Component {
 		$default = array();
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Model = $this->Controller->{$options['modelClass']};
-		if (!$Model->exists($id)) {
+		$model = $this->Controller->{$options['modelClass']};
+		if (!$model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
 
-		return $Model->{$options['readMethod']}($options['fields'], $id);
+		return $model->{$options['readMethod']}($options['fields'], $id);
 	}
 
 /**
@@ -148,17 +148,17 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Controller = $this->Controller;
-		$Model = $Controller->{$options['modelClass']};
+		$controller = $this->Controller;
+		$model = $controller->{$options['modelClass']};
 
-		if ($Controller->request->is('post')) {
-			$primaryKey = $options['modelClass'] . '.' . $Model->primaryKey;
-			$Controller->request->data($primaryKey, null);
+		if ($controller->request->is('post')) {
+			$primaryKey = $options['modelClass'] . '.' . $model->primaryKey;
+			$controller->request->data($primaryKey, null);
 
-			$Model->create();
-			if ($Model->{$options['saveMethod']}($Controller->request->data)) {
+			$model->create();
+			if ($model->{$options['saveMethod']}($controller->request->data)) {
 				$this->setFlash('success', $options);
-				return $Controller->redirect($options['success']['redirect']);
+				return $controller->redirect($options['success']['redirect']);
 			} else {
 				$this->setFlash('error', $options);
 			}
@@ -193,19 +193,19 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Controller = $this->Controller;
-		$Model = $Controller->{$options['modelClass']};
-		if (!$Model->exists($id)) {
+		$controller = $this->Controller;
+		$model = $controller->{$options['modelClass']};
+		if (!$model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
 
-		if (!$Controller->request->is('post') && !$Controller->request->is('put')) {
-			$Model->contain($options['contain']);
-			$Controller->request->data = $Model->read($options['fields'], $id);
+		if (!$controller->request->is('post') && !$controller->request->is('put')) {
+			$model->contain($options['contain']);
+			$controller->request->data = $model->read($options['fields'], $id);
 		} else {
-			if ($Model->{$options['saveMethod']}($Controller->request->data)) {
+			if ($model->{$options['saveMethod']}($controller->request->data)) {
 				$this->setFlash('success', $options);
-				return $Controller->redirect($options['success']['redirect']);
+				return $controller->redirect($options['success']['redirect']);
 			} else {
 				$this->setFlash('error', $options);
 			}
@@ -243,23 +243,23 @@ class BaseActionComponent extends Component {
 
 		$options = Hash::merge($this->options, $default, $options);
 
-		$Controller = $this->Controller;
-		$Model = $Controller->{$options['modelClass']};
+		$controller = $this->Controller;
+		$model = $controller->{$options['modelClass']};
 
-		if (!$Controller->request->is('post')) {
+		if (!$controller->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
 
-		if (!$Model->exists($id)) {
+		if (!$model->exists($id)) {
 			throw new NotFoundException($options['exception']['notFound']);
 		}
 
-		if ($Model->{$options['deleteMethod']}($id)) {
+		if ($model->{$options['deleteMethod']}($id)) {
 			$this->setFlash('success', $options);
-			return $Controller->redirect($options['success']['redirect']);
+			return $controller->redirect($options['success']['redirect']);
 		} else {
 			$this->setFlash('error', $options);
-			return $Controller->redirect($options['error']['redirect']);
+			return $controller->redirect($options['error']['redirect']);
 		}
 	}
 
