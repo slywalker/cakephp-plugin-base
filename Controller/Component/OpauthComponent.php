@@ -12,7 +12,15 @@ class OpauthComponent extends Component {
 	}
 
 	public function callback($post) {
-		return $this->_validateResponse($post);
+		$response = $this->_validateResponse($post);
+
+		if ($response['auth']['provider'] === 'Google') {
+			$response['auth']['info']['urls'] = array(
+				'google' => $response['auth']['raw']['link']
+			);
+		}
+
+		return $response;
 	}
 
 /**
