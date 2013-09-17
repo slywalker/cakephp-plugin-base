@@ -32,7 +32,7 @@ class AccountBehavior extends ModelBehavior {
 		$this->settings[$model->alias] = Hash::merge($default, $config);
 	}
 
-	public function beforeSave(Model $model, $options = array(<list>)) {
+	public function beforeSave(Model $model, $options = array()) {
 		$fields = $this->settings[$model->alias]['fields'];
 		$hashMethod = $this->settings[$model->alias]['hashMethod'];
 
