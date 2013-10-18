@@ -7,6 +7,13 @@ class HtmlEmail extends CakeEmail {
 
 	protected $_stylePath = null;
 
+	protected $_title = null;
+
+	public function subject($subject = null) {
+		$this->_title = $subject;
+		return parent::subject($subject);
+	}
+
 	public function stylePath($path = null) {
 		if ($path === null) {
 			return $this->_stylePath;
@@ -23,7 +30,10 @@ class HtmlEmail extends CakeEmail {
 	}
 
 	protected function _render($content) {
-		$this->viewVars(array('charset' => $this->charset));
+		$this->viewVars(array(
+			'charset' => $this->charset,
+			'title_for_layout' => $this->_title
+		));
 		return parent::_render($content);
 	}
 
