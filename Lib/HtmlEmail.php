@@ -24,8 +24,8 @@ class HtmlEmail extends CakeEmail {
 
 	public function reset() {
 		parent::reset();
-
 		$this->_stylePath = null;
+		$this->_title = null;
 		return $this;
 	}
 
