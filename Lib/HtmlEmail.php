@@ -31,7 +31,7 @@ class HtmlEmail extends CakeEmail {
 		$rendered = parent::_renderTemplates($content);
 
 		$style = false;
-		if (!empty($this->_stylePath) && file_exists($this->_stylePath)) {
+		if (!empty($this->_stylePath)) {
 			$style = file_get_contents($this->_stylePath);
 		}
 
