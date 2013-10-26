@@ -22,6 +22,19 @@ class HtmlEmail extends CakeEmail {
 		return $this;
 	}
 
+	public function message($type = null) {
+		if ($type === 'body') {
+			$html = parent::message('html');
+			$body = '';
+			if (preg_match('/<body.*?>(.*)<\/body>/s', $html, $match)) {
+				$body = $match[1];
+			}
+			return $body;
+		}
+
+		return parent::message($type);
+	}
+
 	public function reset() {
 		parent::reset();
 		$this->_stylePath = null;
