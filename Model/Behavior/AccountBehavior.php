@@ -47,6 +47,9 @@ class AccountBehavior extends ModelBehavior {
 	public function afterSave(Model $model, $created, $options = array()) {
 		$fields = $this->settings[$model->alias]['fields'];
 		$emailVerification = $this->settings[$model->alias]['emailVerification'];
+		if (isset($options['emailVerification'])) {
+			$emailVerification = $options['emailVerification'];
+		}
 		$data = $model->data[$model->alias];
 
 		$oldEmail = '';
